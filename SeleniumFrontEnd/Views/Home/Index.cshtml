@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<h2>@ViewBag.Message</h2>
+<p>
+    @using (Html.BeginForm("CollectLinks", "Test", FormMethod.Post))
+    {
+        @Html.RadioButton("browser", "0", true); <span> Headless </span><br />
+        @Html.RadioButton("browser", "1", false); <span> Firefox </span><br />
+        @Html.RadioButton("browser", "2", false); <span> Intenret Explorer </span><br />
+        @Html.RadioButton("browser", "3", false); <span> Chrome </span><br />
+        @Html.TextBox("rootUrl")
+        <input type="submit" value="Do IT!" />
+    }
+
+    
+
+
+   @* To learn more about ASP.NET MVC visit <a href="http://asp.net/mvc" title="ASP.NET MVC Website">http://asp.net/mvc</a>.*@
+</p>

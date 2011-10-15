@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "Collect all links";
+}
+
+<h2>Collect all links</h2>
+Number of links found: @ViewBag.NumberOfLinksFound @Html.ActionLink("View", "ViewCollectedLinks", "Test") <br />
+Failed links: @ViewBag.FailedTests <br />
+Elasped time: @ViewBag.ElapsedTime ms <br /><br />
+
+
+<table border="0">
+    <tr>
+        <th style="text-align:center">Name</th>
+        <th style="text-align:center">Url</th>
+    </tr>
+
+        @foreach (SeleniumCrawler.Page link in ViewBag.Links)
+        {
+            <tr>
+                <td>@link.LinkName</td>
+                <td>@link.Url.AbsoluteUri</td>
+            </tr>
+        }
+</table>
+
+
+

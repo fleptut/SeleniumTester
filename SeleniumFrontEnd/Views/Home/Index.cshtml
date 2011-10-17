@@ -8,8 +8,8 @@
     {
         @Html.RadioButton("browser", "0", true); <span> Headless </span><br />
         @Html.RadioButton("browser", "1", false); <span> Firefox </span><br />
-        @Html.RadioButton("browser", "2", false); <span> Intenret Explorer </span><br />
-        @Html.RadioButton("browser", "3", false); <span> Chrome </span><br />
+        @Html.RadioButton("browser", "2", false); <span> Internet Explorer </span><br />
+        @Html.RadioButton("browser", "3", false, "Enabled=false"); <span> Chrome </span><br />
         @Html.TextBox("rootUrl")
         <input type="submit" value="Do IT!" />
     }

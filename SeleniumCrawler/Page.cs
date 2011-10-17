@@ -29,7 +29,15 @@ namespace SeleniumCrawler
             var elements = Browser.FindElements(By.TagName("a"));
             foreach (var e in elements)
             {
-                var page = new Page(Browser, e.Text, new Uri(e.GetAttribute("href")));
+                var href = e.GetAttribute("href");
+                if (href == null)
+                {
+                    //href = new string();
+                    href = "http://Found_a_tag.without.href";
+                }
+
+                //var page = new Page(Browser, e.Text, new Uri(e.GetAttribute("href")));
+                var page = new Page(Browser, e.Text, new Uri(href));
                 
                 // TODO: Make sure still on the same domain
                 //if (!Pages.Contains(page))

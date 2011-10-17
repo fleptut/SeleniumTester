@@ -21,13 +21,13 @@ namespace SeleniumCrawler
 
     public class CrawlTests
     {
-        private IWebDriver  _driver;
-        private EBrowser    _browser = EBrowser.None;
-        private Page        _rootPage;
-        private int         _timerStart = 0;
+        private IWebDriver _driver;
+        private EBrowser _browser = EBrowser.None;
+        private Page _rootPage;
+        private int _timerStart = 0;
 
         public int NumberOfLinksFound { get; set; }
-        public int ElapsedTime { get; set;}
+        public int ElapsedTime { get; set; }
         //public Dictionary<string, Page> Links { get; private set; }
 
         public void Init(string url, EBrowser browser)
@@ -81,7 +81,7 @@ namespace SeleniumCrawler
         //        }
         //        _counter--;
         //    }
-            
+
         //}
 
         #region Methods
@@ -114,16 +114,19 @@ namespace SeleniumCrawler
         private void LoadPage(Page page)
         {
             page.CollectLinks();
+            //_driver.Close();
             //var brokenPages = page.TestLinks();
 
 
             // Add any new links
             //AddNewLinks(links);
 
-            //foreach (var link in links)
-            //{
-            //    LoadPage(link.Href);
-            //}
+            foreach (var p in page.Pages)
+            {
+                p.CollectLinks();
+                _driver.Navigate().Back();
+                //LoadPage(p);
+            }
         }
 
         //private void AddNewLinks(IEnumerable<Link> links)

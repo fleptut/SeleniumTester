@@ -7,6 +7,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
+using System.Text.RegularExpressions;
 
 
 namespace SeleniumCrawler
@@ -24,16 +25,24 @@ namespace SeleniumCrawler
         private IWebDriver _driver;
         private EBrowser _browser = EBrowser.None;
         private Page _rootPage;
+        private List<Page> _collectedPages;
+        private List<Page> _testedPages;
         private int _timerStart = 0;
+        private Regex _regExp;
+        private int _depth = 0;
+        private int _maxDepth = 0;
 
         public int NumberOfLinksFound { get; set; }
         public int ElapsedTime { get; set; }
         //public Dictionary<string, Page> Links { get; private set; }
 
-        public void Init(string url, EBrowser browser)
+        public void Init(string url, EBrowser browser, Regex regExp, int maxDepth)
         {
-            //Links = new Dictionary<string, Page>();
+            _testedPages = new List<Page>();
+            _collectedPages = new List<Page>();
             _timerStart = Environment.TickCount;
+            _regExp = regExp;
+            _maxDepth = maxDepth;
 
             // Set which browser to test
             _browser = browser;
@@ -58,37 +67,12 @@ namespace SeleniumCrawler
             _driver.Manage().Timeouts().ImplicitlyWait(new TimeSpan(0, 0, 30));
         }
 
-        //public void TestSetUp()
-        //{
-        //    // Go to root page of site to be tested
-        //    LoadPage(_url);
-        //}
-
-
-        //[Test]
-        //public void CollectLinks(string url)
-        //{
-
-        //    NumberOfLinksFound = Links.Count;
-        //    ElapsedTime = Environment.TickCount - _timerStart;
-
-        //    while (_counter >= 0)
-        //    {
-        //        foreach (var link in Links)
-        //        {
-        //            _driver.Navigate().GoToUrl(link.Key);
-        //            CollectLinks(link.Key);
-        //        }
-        //        _counter--;
-        //    }
-
-        //}
-
-        #region Methods
+       #region Methods
 
         public void LinkTest()
         {
             LoadPage(_rootPage);
+            CleanUp();
         }
 
         public void TimerStart()
@@ -103,48 +87,35 @@ namespace SeleniumCrawler
 
         public int NumberOfCollectedLinks()
         {
-            return _rootPage.Pages.Count;
+            return _collectedPages.Count;
         }
 
         public List<Page> GetCollectedLinks()
         {
-            return _rootPage.Pages;
+            return _collectedPages;
         }
 
         private void LoadPage(Page page)
         {
-            page.CollectLinks();
-            //_driver.Close();
-            //var brokenPages = page.TestLinks();
-
-
-            // Add any new links
-            //AddNewLinks(links);
-
-            foreach (var p in page.Pages)
+            //Only follow links to max depth, max depth == 0 => infinite
+            if (_depth < _maxDepth || _maxDepth == 0)
             {
-                p.CollectLinks();
-                _driver.Navigate().Back();
-                //LoadPage(p);
+                page.CollectLinks(_regExp, _depth++);
+                _testedPages.Add(page);
+                _collectedPages.AddRange(page.Pages);
+                
+
+                foreach (var p in page.Pages)
+                {
+                    if (!_testedPages.Any(x => x.Url.Equals(p.Url)))
+                    {
+                        p.CollectLinks(_regExp, _depth);
+                        _collectedPages.AddRange(p.Pages);
+                        LoadPage(p);
+                    }
+                }
             }
         }
-
-        //private void AddNewLinks(IEnumerable<Link> links)
-        //{
-        //    foreach (var link in links.Where(link => !Links.ContainsKey(link.Href.AbsoluteUri) &&
-        //                                                    IsSameDomain(link.Href)))
-        //    {
-        //        Links.Add(link.Href.AbsolutePath, link);
-        //    }
-        //}
-
-        //private IEnumerable<Link> CollectLinks()
-        //{
-        //    var elements = _driver.FindElements(By.TagName("a"));
-
-        //    // Collect all links
-        //    return elements.Select(e => new Link {Href = new Uri(e.GetAttribute("href")), Name = e.Text}).ToList();
-        //}
 
         #endregion
 

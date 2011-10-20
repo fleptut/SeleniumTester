@@ -1,0 +1,23 @@
+﻿<div id="collectedLinks">
+    <h2>Collecting links</h2>
+    Number of links found: @ViewBag.NumberOfLinksFound <br />
+    Failed links: @ViewBag.FailedTests <br />
+    Elasped time: @ViewBag.ElapsedTime ms <br /><br />
+
+    <table border="0">
+    <tr>
+        <th style="text-align:center">Name</th>
+        <th style="text-align:center">Url</th>
+        <th style="text-align:center">Page depth</th>
+    </tr>
+
+        @foreach (SeleniumCrawler.Page page in ViewBag.Links)
+        {
+            <tr>
+                <td style="text-align:right">@page.LinkName</td>
+                <td style="text-align:left">@page.Url.AbsoluteUri</td>
+                <td style="text-align:center">@page.PageDepth</td>
+            </tr>
+        }
+</table>
+</div>

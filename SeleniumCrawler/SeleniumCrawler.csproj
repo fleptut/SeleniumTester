@@ -62,7 +62,6 @@
   <ItemGroup>
     <Compile Include="Page.cs" />
     <Compile Include="TestCrawler.cs" />
-    <Compile Include="Link.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

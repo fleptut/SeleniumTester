@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using OpenQA.Selenium;
@@ -8,6 +9,7 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
 using System.Text.RegularExpressions;
+using Selenium;
 
 
 namespace SeleniumCrawler
@@ -24,22 +26,16 @@ namespace SeleniumCrawler
     {
         private IWebDriver _driver;
         private EBrowser _browser = EBrowser.None;
-        private Page _rootPage;
-        private List<Page> _collectedPages;
-        private List<Page> _testedPages;
         private int _timerStart = 0;
         private Regex _regExp;
-        private int _depth = 0;
         private int _maxDepth = 0;
 
         public int NumberOfLinksFound { get; set; }
         public int ElapsedTime { get; set; }
-        //public Dictionary<string, Page> Links { get; private set; }
+        public Page RootPage { get; private set; }
 
         public void Init(string url, EBrowser browser, Regex regExp, int maxDepth)
         {
-            _testedPages = new List<Page>();
-            _collectedPages = new List<Page>();
             _timerStart = Environment.TickCount;
             _regExp = regExp;
             _maxDepth = maxDepth;
@@ -62,18 +58,56 @@ namespace SeleniumCrawler
                     _driver = new RemoteWebDriver(DesiredCapabilities.HtmlUnitWithJavaScript());
                     break;
             }
-
-            _rootPage = new Page(_driver, "Root page", new Uri(url));
-            _driver.Manage().Timeouts().ImplicitlyWait(new TimeSpan(0, 0, 30));
+            
+            // Load root page
+            _driver.Navigate().GoToUrl(url);
+            RootPage = new Page(_driver, null, null) { Source = _driver.PageSource };
+#if DEBUG
+            _driver.Manage().Timeouts().ImplicitlyWait(new TimeSpan(0, 0, 1));
+#else
+            _driver.Manage().Timeouts().ImplicitlyWait(new TimeSpan(0, 0, 5));
+#endif
         }
 
        #region Methods
 
-        public void LinkTest()
+        public void Start()
         {
-            LoadPage(_rootPage);
-            CleanUp();
+            //Collect all a tags
+            var count = _driver.FindElements(By.TagName("a")).Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                var webElement = _driver.FindElements(By.TagName("a")).ElementAtOrDefault(i);
+                var child = new Page(_driver, webElement, RootPage) { Source = _driver.PageSource };
+                RootPage.Children.Add(child);
+
+                var m = _regExp.Match(child.Url.AbsoluteUri);
+                if (m.Success && RootPage.PageDepth < _maxDepth)
+                {
+                    webElement.Click();
+                    child.Source = _driver.PageSource;
+                    child.CollectLinks(_regExp, _maxDepth);
+                    _driver.Navigate().Back();
+                }
+            }
         }
+        
+        //public List<Page> TestLinks()
+        //{
+        //    var brokenPages = new List<Page>();
+
+        //    foreach (var page in Pages)
+        //    {
+        //        Browser.Navigate().GoToUrl(page.Url.AbsoluteUri);
+
+        //        // TODO: Need to check case sensisivity!!
+        //        if (Browser.PageSource.Contains("404 not found"))
+        //            brokenPages.Add(page);
+        //    }
+
+        //    return brokenPages;
+        //}
 
         public void TimerStart()
         {
@@ -83,38 +117,6 @@ namespace SeleniumCrawler
         public int TimerStop()
         {
             return Environment.TickCount - _timerStart;
-        }
-
-        public int NumberOfCollectedLinks()
-        {
-            return _collectedPages.Count;
-        }
-
-        public List<Page> GetCollectedLinks()
-        {
-            return _collectedPages;
-        }
-
-        private void LoadPage(Page page)
-        {
-            //Only follow links to max depth, max depth == 0 => infinite
-            if (_depth < _maxDepth || _maxDepth == 0)
-            {
-                page.CollectLinks(_regExp, _depth++);
-                _testedPages.Add(page);
-                _collectedPages.AddRange(page.Pages);
-                
-
-                foreach (var p in page.Pages)
-                {
-                    if (!_testedPages.Any(x => x.Url.Equals(p.Url)))
-                    {
-                        p.CollectLinks(_regExp, _depth);
-                        _collectedPages.AddRange(p.Pages);
-                        LoadPage(p);
-                    }
-                }
-            }
         }
 
         #endregion

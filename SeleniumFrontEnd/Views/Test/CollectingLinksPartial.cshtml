@@ -1,8 +1,10 @@
-﻿<div id="collectedLinks">
+﻿@model IEnumerable<SeleniumCrawler.Page>
+
+<div id="collectedLinks">
     <h2>Collecting links</h2>
-    Number of links found: @ViewBag.NumberOfLinksFound <br />
+   @* Number of links found: @ViewBag.Link.Count <br />
     Failed links: @ViewBag.FailedTests <br />
-    Elasped time: @ViewBag.ElapsedTime ms <br /><br />
+    Elasped time: @ViewBag.ElapsedTime ms <br /><br />*@
 
     <table border="0">
     <tr>
@@ -10,14 +12,31 @@
         <th style="text-align:center">Url</th>
         <th style="text-align:center">Page depth</th>
     </tr>
+    </table>
 
-        @foreach (SeleniumCrawler.Page page in ViewBag.Links)
+@*    
+
+        @foreach (var kvp in ViewBag.Links)
         {
+            var page = kvp.Value;
             <tr>
                 <td style="text-align:right">@page.LinkName</td>
                 <td style="text-align:left">@page.Url.AbsoluteUri</td>
                 <td style="text-align:center">@page.PageDepth</td>
             </tr>
         }
-</table>
+</table>*@
 </div>
+
+@*@helper PrintChildren(Page page) {
+     <ul>
+         @if(page.Children.> 0) {
+             foreach(MyObject subItem in _object.listOfObjects) {
+                 <li>
+                    @_object.Title
+                    @ShowSubItems(subItem)
+                 </li>
+             }
+         }
+     </ul>
+ }*@

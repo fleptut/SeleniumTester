@@ -4,10 +4,10 @@
 
 <h2>@ViewBag.Message</h2>
 <p></p>
-    @*@using (Html.BeginForm("CollectLinks", "Test", FormMethod.Post))*@
-    @using (Ajax.BeginForm("CollectLinks", "Test", new AjaxOptions { HttpMethod = "POST",
+     @* @using (Ajax.BeginForm("CollectLinks", "Test", new AjaxOptions { HttpMethod = "POST",
                                                                      InsertionMode = InsertionMode.Replace,
-                                                                     UpdateTargetId = "collectedLinks"}))
+                                                                     UpdateTargetId = "collectedLinks"}))*@
+    @using (Html.BeginForm("CollectLinks", "Test", FormMethod.Post))
     {
       
         @Html.RadioButton("browser", "0", false); <span> Headless </span><br />

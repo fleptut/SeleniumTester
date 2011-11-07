@@ -1,0 +1,103 @@
+﻿@*@model IEnumerable<SeleniumCrawler.Page>*@
+
+<style type="text/css">
+    .Highlight { background-color:#cccs; }
+    .flip { width:auto; }
+    .content { width:auto; display:none; }
+</style>
+<script type="text/javascript" src="../../Scripts/jquery-1.5.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.flip').click(function () {
+            $(this).children(':first').slideToggle('slow');
+        });
+
+        $('.flip').hover(function () {
+            $(this).css('cursor', 'pointer')
+                   .toggleClass('Highlight');
+        });
+    });
+</script>
+@helper PrintChilds(SeleniumCrawler.Page page)
+{
+    <ul>
+        @foreach (SeleniumCrawler.Page child in @page.Children)
+        {
+            <li>
+                <div class="flip">@child.Title @child.Children.Count
+                 <div class="content">@Html.Raw(child.Source)</div>
+                </div>
+                @PrintChilds(child)
+            </li>
+        }
+    </ul>
+}
+
+@{
+    ViewBag.Title = "CollectLinks";
+}
+
+<h2>CollectLinks</h2>
+<ul>
+    <li>
+        <div class="flip">@ViewBag.RootPage.Title @ViewBag.RootPage.Children.Count
+            <div class='content'>@Html.Raw(ViewBag.RootPage.Source)</div>
+        </div>
+        @PrintChilds(ViewBag.RootPage)
+    </li>
+</ul>
+
+@*
+
+<table style="width:80%; left:auto; right:auto">
+        <tr>
+            <th>@page.Title</th>
+            <th>Absolute path</th>
+            <th>Page depth</th>
+            <th>Number of childs</th>
+        </tr>
+        @foreach(SeleniumCrawler.Page child in page.Children) {       
+        <tr>
+            <td>@child.Title</td>
+            <td>@child.Url.AbsolutePath</td>
+            <td>@child.PageDepth</td>
+            <td>@child.Children.Count</td>
+        </tr>
+        @PrintChilds(child)
+        }
+    </table>
+    <br />
+
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table>
+    <tr>
+        <th>
+            LinkName
+        </th>
+        <th>
+            PageDepth
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.LinkName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Url.AbsolutUri)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>
+    </tr>
+}
+
+</table>
+*@

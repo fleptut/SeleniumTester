@@ -9,64 +9,59 @@ namespace SeleniumCrawler
 {
     public class Page
     {
-        private IWebDriver Browser { get; set; }
+        private readonly    IWebDriver _browser;
 
-        public String LinkName { get; private set; }
-        public Uri Url { get; private set; }
-        public List<Page> Pages { get; private set; }
-        public int PageDepth { get; private set; }
-
-        public Page(IWebDriver browser, String name, Uri url)
+        public String       Title { get; private set; }
+        public Uri          Url { get; private set; }
+        public Page         Parrent { get; private set; }
+        public List<Page>   Children { get; set; }
+        public int          PageDepth { get; set; }
+        public String       Source;
+        public bool         PassedTest { get; set; }
+        
+        public Page(IWebDriver browser, IWebElement link, Page parrent)
         {
-            Browser = browser;
-            LinkName = name;
-            Url = url;
+            _browser = browser;
+            Parrent = parrent;
+            Children = new List<Page>();
+
+            // Root page
+            if (link == null || parrent == null)
+            {
+                Title = "Root page";
+                Url = new Uri(_browser.Url);
+                PageDepth = 0;
+            }
+            // All other pages
+            else
+            {
+                Title = link.Text;
+                Url = new Uri(link.GetAttribute("href"));
+                PageDepth = parrent.PageDepth+1;
+            }
+            
         }
 
-        public void CollectLinks(Regex regExp, int pageDepth)
+        public void CollectLinks(Regex regExp, int maxDepth)
         {
-            Pages = new List<Page>();
-            Browser.Navigate().GoToUrl(Url);
+            int count = _browser.FindElements(By.TagName("a")).Count;
 
-            var elements = Browser.FindElements(By.TagName("a"));
-            foreach (var e in elements)
+            for (int i = 0; i < count; i++)
             {
-                var href = e.GetAttribute("href");
-                if (href != null)
+                var webElement = _browser.FindElements(By.TagName("a")).ElementAtOrDefault(i);
+                var child = new Page(_browser, webElement, this);
+                Children.Add(child);
+
+                var m = regExp.Match(child.Url.AbsoluteUri);
+                if (m.Success && PageDepth < maxDepth)
                 {
-                    // Only add if we match the wanted criteria
-                    Match m = regExp.Match(href);
-                    if (m.Success)
-                    {
-                        var page = new Page(Browser, e.Text, new Uri(href));
-                        page.PageDepth = pageDepth;
-                        Pages.Add(page);
-                    }
-                    
+                    webElement.Click();
+                    child.Source = _browser.PageSource;
+                    child.CollectLinks(regExp, maxDepth);
+                    _browser.Navigate().Back();
                 }
+                
             }
-            Browser.Navigate().Back();
         }
-
-        public List<Page> TestLinks()
-        {
-            var brokenPages = new List<Page>();
-
-            foreach (var page in Pages)
-            {
-                Browser.Navigate().GoToUrl(page.Url.AbsoluteUri);
-
-                // TODO: Need to check case sensisivity!!
-                if (Browser.PageSource.Contains("404 not found"))
-                    brokenPages.Add(page);
-            }
-
-            return brokenPages;
-        }
-
-        //private bool IsSameDomain(Page page)
-        //{
-        //    return _rootPage.Contains(page.);
-        //}
     }
 }

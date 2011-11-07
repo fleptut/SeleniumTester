@@ -22,7 +22,7 @@ namespace SeleniumFrontEnd.Controllers
             return View();
         }
 
-        public PartialViewResult CollectLinks(FormCollection col)
+        public ActionResult CollectLinks(FormCollection col)
         {
             SeleniumCrawler.EBrowser browser = EBrowser.None;
             string rootUrl = col["rootUrl"];
@@ -75,18 +75,19 @@ namespace SeleniumFrontEnd.Controllers
 
             _tester.Init(rootUrl, browser, RegExp, maxDepth);
             _tester.TimerStart();
-            _tester.LinkTest();
-            ViewBag.NumberOfLinksFound = _tester.GetCollectedLinks().Count;
-            ViewBag.FailedTests = 0;
+            _tester.Start();
+            //ViewBag.NumberOfLinksFound = _tester.GetCollectedLinks().Count;
+            //ViewBag.FailedTests = 0;
             ViewBag.ElapsedTime = _tester.TimerStop();
-            ViewBag.Links = _tester.GetCollectedLinks();
+            ViewBag.RootPage = _tester.RootPage;
+            _tester.CleanUp();
 
-            return PartialView("CollectingLinksPartial");
+            return View();
         }
 
         public ActionResult ViewCollectedLinks()
         {
-            ViewBag.Links = _tester.GetCollectedLinks();
+            //ViewBag.Links = _tester.GetCollectedLinks();
 
             return View();
         }

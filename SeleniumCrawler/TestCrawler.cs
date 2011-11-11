@@ -75,26 +75,28 @@ namespace SeleniumCrawler
 
         public void Start()
         {
+            byte[] data;
             // Init proxy server
             int portNo = 9091;
             var serverName = "http://localhost:9090/proxy";
             var request = WebRequest.Create(serverName);
             request.Method = WebRequestMethods.Http.Post;
             String jsonPort = "{ port :" + portNo + " }";
+            data = Encoding.UTF8.GetBytes(jsonPort);
 
-            request.ContentLength = jsonPort.Length;
-            var proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
-            proxyServer.Write(jsonPort);
-            proxyServer.Close();
+            //request.ContentLength = jsonPort.Length;
+            var response = request.GetRequestStream();
+            response.Write(data, 0, data.Length);
+            //proxyServer.Close();
 
             // Setup HAR
-            request = WebRequest.Create(serverName + "/" + portNo + "/har");
-            request.Method = WebRequestMethods.Http.Post;
-            String jsonHARInit = "{ initialPageRef=Foo }";
-            request.ContentLength = jsonHARInit.Length;
-            proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
-            proxyServer.Write(jsonHARInit);
-            proxyServer.Close();
+            //request = WebRequest.Create(serverName + "/" + portNo + "/har");
+            //request.Method = WebRequestMethods.Http.Post;
+            //String jsonHARInit = "{ initialPageRef=Foo }";
+            //request.ContentLength = jsonHARInit.Length;
+            //response= new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
+            //response
+            //proxyServer.Close();
 
 
             ////Collect all a tags
@@ -116,17 +118,19 @@ namespace SeleniumCrawler
             //    }
             //}
 
-            request = WebRequest.Create(serverName + "/" + portNo + "/har");
-            request.Method = WebRequestMethods.Http.Get;
-            proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
-            proxyServer.Write("");
-            proxyServer.Close();
+            //request = WebRequest.Create(serverName + "/" + portNo + "/har");
+            //request.Method = WebRequestMethods.Http.Get;
+            //var response = request.GetResponse();
+            //var reader = new StreamReader(response.GetResponseStream());
+            //String r = reader.ReadToEnd();
 
-            request = WebRequest.Create(serverName + "/" + portNo);
-            request.Method = "DELETE";
-            proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
-            proxyServer.Write("");
-            proxyServer.Close();
+
+            //request = WebRequest.Create(serverName + "/" + portNo);
+            //request.Method = "DELETE";
+            //response = request.GetResponse();
+            ////proxyServer = new StreamWriter(response.GetResponseStream());
+
+            //proxyServer.Close();
         }
         
         //public List<Page> TestLinks()

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -73,24 +75,58 @@ namespace SeleniumCrawler
 
         public void Start()
         {
-            //Collect all a tags
-            var count = _driver.FindElements(By.TagName("a")).Count;
+            // Init proxy server
+            int portNo = 9091;
+            var serverName = "http://localhost:9090/proxy";
+            var request = WebRequest.Create(serverName);
+            request.Method = WebRequestMethods.Http.Post;
+            String jsonPort = "{ port :" + portNo + " }";
 
-            for (int i = 0; i < count; i++)
-            {
-                var webElement = _driver.FindElements(By.TagName("a")).ElementAtOrDefault(i);
-                var child = new Page(_driver, webElement, RootPage) { Source = _driver.PageSource };
-                RootPage.Children.Add(child);
+            request.ContentLength = jsonPort.Length;
+            var proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
+            proxyServer.Write(jsonPort);
+            proxyServer.Close();
 
-                var m = _regExp.Match(child.Url.AbsoluteUri);
-                if (m.Success && RootPage.PageDepth < _maxDepth)
-                {
-                    webElement.Click();
-                    child.Source = _driver.PageSource;
-                    child.CollectLinks(_regExp, _maxDepth);
-                    _driver.Navigate().Back();
-                }
-            }
+            // Setup HAR
+            request = WebRequest.Create(serverName + "/" + portNo + "/har");
+            request.Method = WebRequestMethods.Http.Post;
+            String jsonHARInit = "{ initialPageRef=Foo }";
+            request.ContentLength = jsonHARInit.Length;
+            proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
+            proxyServer.Write(jsonHARInit);
+            proxyServer.Close();
+
+
+            ////Collect all a tags
+            //var count = _driver.FindElements(By.TagName("a")).Count;
+
+            //for (int i = 0; i < count; i++)
+            //{
+            //    var webElement = _driver.FindElements(By.TagName("a")).ElementAtOrDefault(i);
+            //    var child = new Page(_driver, webElement, RootPage) { Source = _driver.PageSource };
+            //    RootPage.Children.Add(child);
+
+            //    var m = _regExp.Match(child.Url.AbsoluteUri);
+            //    if (m.Success && RootPage.PageDepth < _maxDepth)
+            //    {
+            //        webElement.Click();
+            //        child.Source = _driver.PageSource;
+            //        child.CollectLinks(_regExp, _maxDepth);
+            //        _driver.Navigate().Back();
+            //    }
+            //}
+
+            request = WebRequest.Create(serverName + "/" + portNo + "/har");
+            request.Method = WebRequestMethods.Http.Get;
+            proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
+            proxyServer.Write("");
+            proxyServer.Close();
+
+            request = WebRequest.Create(serverName + "/" + portNo);
+            request.Method = "DELETE";
+            proxyServer = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
+            proxyServer.Write("");
+            proxyServer.Close();
         }
         
         //public List<Page> TestLinks()

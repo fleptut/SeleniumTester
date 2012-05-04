@@ -5,6 +5,8 @@ using System.Text;
 using OpenQA.Selenium;
 using System.Text.RegularExpressions;
 
+// fake change to test GIT integration in VS
+
 namespace SeleniumCrawler
 {
     public class Page
